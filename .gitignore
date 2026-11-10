@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local file uploads (Phase 1 uses URLs / Google Drive file ids)
+uploads/
+!uploads/.gitkeep
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Test and build output
+coverage/
+dist/
+.mongodb-binaries/
