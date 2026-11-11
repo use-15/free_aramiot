@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARAMIOT Admin — Dashboard</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/admin/assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-topbar">
+      <a class="admin-topbar-brand" href="/admin">
+        <span class="mark" aria-hidden="true">A</span>
+        <span>ARAMIOT Admin</span>
+      </a>
+      <nav class="admin-topbar-nav" aria-label="Admin sections">
+        <a class="nav-link" href="/admin/dashboard.html">Dashboard</a>
+        <a class="nav-link" href="/admin/pages.html">Pages</a>
+        <a class="nav-link" href="/admin/articles.html">Articles</a>
+        <a class="nav-link" href="/admin/categories.html">Categories</a>
+        <a class="nav-link" href="/admin/projects.html">Projects</a>
+        <a class="nav-link" href="/admin/programs.html">Programs</a>
+        <a class="nav-link" href="/admin/team.html">Team</a>
+        <a class="nav-link" href="/admin/publications.html">Publications</a>
+        <a class="nav-link" href="/admin/resources.html">Resources</a>
+        <a class="nav-link" href="/admin/impact.html">Impact</a>
+        <a class="nav-link" href="/admin/messages.html">Messages</a>
+        <a class="nav-link" href="/admin/applications.html">Applications</a>
+        <a class="nav-link" href="/admin/inquiries.html">Inquiries</a>
+        <a class="nav-link" href="/admin/organization.html">Organization</a>
+        <a class="nav-link" href="/admin/website-settings.html">Site settings</a>
+      </nav>
+      <div class="admin-topbar-user" id="topbar-user">
+        <span class="admin-spinner" aria-hidden="true"></span>
+        <span class="admin-hide" id="topbar-signed-out">
+          <a class="btn-admin btn-admin--secondary" href="/admin/login">Sign in</a>
+        </span>
+      </div>
+    </header>
+
+    <main class="admin-body">
+      <div class="admin-container">
+        <div class="admin-alert admin-alert--error admin-hide" id="page-alert" role="alert"></div>
+
+        <div class="admin-loading admin-card" id="dashboard-loading">
+          <div class="admin-card-body" style="text-align:center;padding:2.5rem 1rem;">
+            <span class="admin-spinner" aria-hidden="true"></span>
+            <p class="mt-3 mb-0">Loading dashboard…</p>
+          </div>
+        </div>
+
+        <section class="admin-hide" id="dashboard-section">
+          <div class="admin-page-header">
+            <div>
+              <h1 class="admin-page-title">Dashboard</h1>
+              <p class="admin-page-sub" id="dashboard-sub">Overview of the ARAMIOT content and inbox.</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <a class="btn-admin btn-admin--secondary" href="/admin/pages.html">Pages</a>
+              <a class="btn-admin btn-admin--secondary" href="/admin/articles.html">Articles</a>
+              <a class="btn-admin btn-admin--accent" href="/admin/messages.html">Review messages</a>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2 class="admin-card-title">Summary</h2>
+              <span class="badge-id" id="dashboard-env"></span>
+            </div>
+            <div class="admin-card-body">
+              <div class="summary-grid" id="summary-grid"></div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2 class="admin-card-title">Inbox</h2>
+              <span class="badge-id" id="inbox-count"></span>
+            </div>
+            <div class="admin-card-body">
+              <div class="summary-grid" id="inbox-grid"></div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2 class="admin-card-title">Content status</h2>
+            </div>
+            <div class="admin-card-body">
+              <table class="admin-table" id="content-status-table">
+                <thead>
+                  <tr>
+                    <th>Collection</th>
+                    <th>Published</th>
+                    <th>Draft</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="content-status-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="admin-card" style="margin:0 1.25rem 1.5rem;">
+      <div class="admin-card-body" style="padding:0.7rem 1.1rem;">
+        <span class="badge-id" id="footer-version"></span>
+        <span class="ms-2 text-muted" style="font-size:0.8rem;color:var(--admin-muted);">
+          The admin interface is reachable only on this origin and is not linked from the public site.
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    window.ARAMIOT_ADMIN_CONFIG = {
+      API_BASE_URL: window.location.origin + '/api/admin',
+      REQUEST_TIMEOUT_MS: 15000,
+    };
+  </script>
+  <script src="/admin/assets/js/admin-api.js"></script>
+  <script src="/admin/assets/js/admin-dashboard.js"></script>
+</body>
+</html>

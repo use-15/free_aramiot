@@ -38,7 +38,7 @@ cp .env.example .env
 # 3. Insert the sample content (development only)
 npm run seed
 
-# 4. Start the site + API on http://localhost:5000
+# 4. Start the site + API on http://localhost:3000
 npm start
 ```
 
@@ -70,12 +70,12 @@ downloads a MongoDB binary the first time it runs.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `NODE_ENV` | `development` | Production disables debug logging and enables static caching |
-| `PORT` | `5000` | HTTP port |
+| `PORT` | `3000` | HTTP port |
 | `HOST` | `0.0.0.0` | Bind address |
 | `MONGODB_URI` | — | MongoDB connection string (required) |
 | `CORS_ORIGINS` | — | Comma separated browser origins allowed to call the API |
 | `SERVE_FRONTEND` | `true` | Serve `frontend/` from Express so both share one origin |
-| `SITE_URL` | `http://localhost:5000` | Public site URL for metadata |
+| `SITE_URL` | `http://localhost:3000` | Public site URL for metadata |
 | `USE_IN_MEMORY_DB` | `false` | Development only: in-memory MongoDB |
 
 When the frontend is served by Express, the API base URL is resolved
@@ -288,6 +288,24 @@ wired into the same Express app:
 Required env vars (add to `.env`): `ADMIN_JWT_SECRET`, `CSRF_SECRET`,
 `ADMIN_INIT_SECRET`, `ADMIN_INIT_DISABLED`. See `.env.example`.
 
-**Not yet done:** Google Drive upload is represented by a pending integration
-note in the admin media interface; a full admin content editor UI, rich-text
-admin authoring, CSP nonces and rate limiting on admin writes are Phase 3 work.
+**Phase 2 additions:**
+
+* **Admin frontend** — a separate Super Admin interface under `admin/` (login page,
+  dashboard, content editors for all 10 content types, inbox readers for contact
+  messages / volunteer applications / partnership inquiries, website settings, and
+  account + password change). Pages are served by the same Express app under
+  `/admin/*` (login is always reachable; the rest requires a valid Super Admin
+  session). The admin JS client talks to the existing `/api/admin/*` routes.
+  Admin HTML is not linked from the public site and is not advertised anywhere.
+* **Media interface (Drive-ready, not live)** — `backend/services/mediaService.js`
+  defines the media contract the admin dashboard will use (normalise a media object
+  or a `fileId`/`fileUrl`/`fileProvider` reference; Drive provider is reserved). A
+  guarded `/api/admin/media/upload` endpoint exposes the contract and returns a clear
+  "not implemented in this phase" response. No Google API client, no OAuth, and no
+  Drive HTTP calls are included in this phase; the real Drive integration (service
+  account or user OAuth, resumable uploads, thumbnails, signed/preview URLs) is
+  Phase 3 and only touches this service + the same `fileId`/`fileUrl`/`fileProvider`
+  fields already on `Publication`, `Resource` and `mediaSchema`.
+
+**Not yet done:** a live Google Drive integration, rich-text admin authoring, CSP
+nonces and rate limiting on admin writes are Phase 3 work.

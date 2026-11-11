@@ -10,8 +10,19 @@
  * keys, and it cannot touch passwordHash / sensitive internal fields.
  *
  * Each descriptor is the field's Mongoose definition object (so setters, enums,
- * defaults and transforms still apply). 'content'/'description' etc. are included
- * as generous defaults for the rich-text fields the admin will edit.
+ * defaults and transforms still apply). We now include every top-level field
+ * regardless of type (String, Number, Boolean, Date, ObjectId, Array, Embedded),
+ * so the admin UI can edit displayOrder, isPublished, publishedAt, category,
+ * tags, gallery, address, socialLinks, logo, featuredImage, coverImage, profileImage
+ * and every other editable top-level field — not only String fields.
+ *
+ * Nested subdocument paths (e.g. featuredImage.url, address.street) are excluded:
+ * the admin forms send whole subdocument objects (e.g. featuredImage: { url, alt })
+ * and contentHelpers builds the nested writes from the sub-schema, so we do not need
+ * the nested path keys here.
+ *
+ * Internal / auto fields are excluded: _id, createdAt, updatedAt, and any
+ * _presplitPath internal paths.
  */
 
 const Organization = require('../models/Organization');
@@ -25,57 +36,37 @@ const Publication = require('../models/Publication');
 const Resource = require('../models/Resource');
 const ImpactStatistic = require('../models/ImpactStatistic');
 
+/** Top-level schema paths only: real fields, all instances, excluding nested/
+ * internal/auto paths. */
+function topLevelFields(schema) {
+  return Object.fromEntries(
+    Object.entries(schema.paths).filter(([key, definition]) => {
+      if (!definition) return false;
+      if (key === '_id') return false; // never let the admin choose the id
+      if (key === 'createdAt' || key === 'updatedAt') return false; // managed by timestamps
+      if (key.includes('.')) return false; // nested subdocument paths — handled separately
+      // NOTE: in Mongoose 8.x every schema path has _presplitPath (an internal
+      // [path] array whose length is 1 for top-level fields and >1 for nested).
+      // Excluding on _presplitPath alone would drop all top-level fields, so we only
+      // drop genuinely nested ones (already handled above by key.includes('.')) and
+      // keep top-level user fields.
+      if (definition && definition._presplitPath && definition._presplitPath.length > 1) return false;
+      return true;
+    })
+  );
+}
+
 const MODEL_FIELDS = {
-  Organization: Object.fromEntries(
-    Object.entries(Organization.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Page: Object.fromEntries(
-    Object.entries(Page.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Article: Object.fromEntries(
-    Object.entries(Article.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Category: Object.fromEntries(
-    Object.entries(Category.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Project: Object.fromEntries(
-    Object.entries(Project.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Program: Object.fromEntries(
-    Object.entries(Program.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  TeamMember: Object.fromEntries(
-    Object.entries(TeamMember.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Publication: Object.fromEntries(
-    Object.entries(Publication.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  Resource: Object.fromEntries(
-    Object.entries(Resource.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
-  ImpactStatistic: Object.fromEntries(
-    Object.entries(ImpactStatistic.schema.paths).filter(([, definition]) =>
-      definition && definition.instance === 'String' && !definition._presplitPath
-    )
-  ),
+  Organization: topLevelFields(Organization.schema),
+  Page: topLevelFields(Page.schema),
+  Article: topLevelFields(Article.schema),
+  Category: topLevelFields(Category.schema),
+  Project: topLevelFields(Project.schema),
+  Program: topLevelFields(Program.schema),
+  TeamMember: topLevelFields(TeamMember.schema),
+  Publication: topLevelFields(Publication.schema),
+  Resource: topLevelFields(Resource.schema),
+  ImpactStatistic: topLevelFields(ImpactStatistic.schema),
 };
 
 module.exports = { MODEL_FIELDS };

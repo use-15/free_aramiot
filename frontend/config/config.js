@@ -12,7 +12,7 @@
 window.ARAMIOT_CONFIG = {
   API_BASE_URL:
     window.location.protocol === 'file:'
-      ? 'http://localhost:5000/api'
+      ? 'http://localhost:3000/api'
       : window.location.origin + '/api',
   SITE_NAME: 'ARAMIOT',
   REQUEST_TIMEOUT_MS: 15000,

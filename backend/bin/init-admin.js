@@ -25,10 +25,10 @@
  */
 
 const path = require('path');
-require(path.join(__dirname, '..', '..', 'backend', 'config', 'env'));
+require(path.join(__dirname, '..', 'config', 'env'));
 
-const { connectDatabase, disconnectDatabase } = require(path.join(__dirname, '..', 'backend', 'config', 'database'));
-const config = require(path.join(__dirname, '..', 'backend', 'config', 'env'));
+const { connectDatabase, disconnectDatabase } = require(path.join(__dirname, '..', 'config', 'database'));
+const config = require(path.join(__dirname, '..', 'config', 'env'));
 
 function usage() {
   console.log([
@@ -87,8 +87,8 @@ async function main() {
   console.log('[init-admin] connecting to database...');
   await connectDatabase();
 
-  const { postJson } = require(path.join(__dirname, '..', 'backend', 'utils', 'apiRequest'));
-  const baseUrl = `http://127.0.0.1:${config.port || 5000}`;
+  const { postJson } = require(path.join(__dirname, '..', 'utils', 'apiRequest'));
+  const baseUrl = `http://127.0.0.1:${config.port || 3000}`;
 
   console.log('[init-admin] initializing Super Admin account...');
   const response = await postJson(`${baseUrl}/api/admin/auth/init`, {

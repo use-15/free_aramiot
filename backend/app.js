@@ -221,11 +221,23 @@ app.get('/admin', adminAssetGuard, require('./middleware/adminAuth').requireAdmi
   });
 });
 
+// Admin static assets (CSS/JS/images) — same-origin only, no auth required.
+// These mounts are registered BEFORE the /admin/* catch-all so that requests for
+// admin JS/CSS/images are served by the static handler (assets are not secret on
+// their own; the sensitive thing is the admin HTML and the data API) and never hit
+// the authenticated /admin/* route. That keeps the login page loadable by
+// unauthenticated users (the login page itself is served separately by /admin/login).
+app.use('/admin/assets', adminAssetGuard, express.static(path.join(__dirname, '..', 'admin', 'assets'), {
+  maxAge: config.isProduction ? '1h' : 0,
+}));
+app.use('/admin/components', adminAssetGuard, express.static(path.join(__dirname, '..', 'admin', 'components'), {
+  maxAge: config.isProduction ? '1h' : 0,
+}));
+
 // Fallback for /admin/* HTML pages — serve from admin/ if authenticated.
 app.get('/admin/*', adminAssetGuard, require('./middleware/adminAuth').requireAdmin, (_req, res) => {
-  // This catches /admin/pages/* etc. when requested as HTML. For asset requests
-  // the static middleware below handles them. For HTML we re-use the static
-  // handler but only for same-origin authenticated requests (already gated).
+  // This catches /admin/pages/* etc. when requested as HTML. Asset requests are
+  // handled above by the /admin/assets and /admin/components static mounts.
   adminStatic(_req, res, () => {
     // If the file does not exist, return 404 JSON (admin clients expect JSON for
     // the API; browsers hitting an HTML path get 404).
@@ -235,14 +247,6 @@ app.get('/admin/*', adminAssetGuard, require('./middleware/adminAuth').requireAd
     });
   });
 });
-
-// Admin static assets (CSS/JS/images) — same-origin only, no auth required.
-app.use('/admin/assets', adminAssetGuard, express.static(path.join(__dirname, '..', 'admin', 'assets'), {
-  maxAge: config.isProduction ? '1h' : 0,
-}));
-app.use('/admin/components', adminAssetGuard, express.static(path.join(__dirname, '..', 'admin', 'components'), {
-  maxAge: config.isProduction ? '1h' : 0,
-}));
 
 // ---- public website (unchanged) -------------------------------------------
 

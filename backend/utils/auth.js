@@ -182,6 +182,15 @@ function csrfProtection() {
       },
       size: 64,
       ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
+      // csrf-csrf v4 defaults getCsrfTokenFromRequest to reading the
+      // `X-Csrf-Token` header. Our admin client (login form + admin-api.js) sends the
+      // submit token as `req.body._csrf` (urlencoded), so we configure the library to
+      // read it from the parsed body. We also accept the header for any client that
+      // prefers it, matching the library's default behaviour.
+      getCsrfTokenFromRequest: (req) =>
+        (req.body && req.body._csrf) ||
+        (req.headers && req.headers['x-csrf-token']) ||
+        '',
     });
   }
   return _doubleCsrf;

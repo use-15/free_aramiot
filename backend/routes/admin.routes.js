@@ -20,11 +20,12 @@ const {
   requireAdmin,
   getAuthState,
 } = require('../middleware/adminAuth');
-const { csrfTokenFactory, csrfProtection } = require('../utils/auth');
+const { csrfTokenFactory, csrfProtection, verifyPassword, hashPassword, mintSession, setSessionCookie } = require('../utils/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { safeDoc, safeDocs, adminUpdate, adminSort } = require('../services/contentHelpers');
 const { MODEL_FIELDS } = require('../services/modelsToFields');
+const config = require('../config/env');
 
 const router = express.Router();
 
@@ -726,12 +727,35 @@ router.post(
     // Rotate session so the new password takes effect on the current session's
     // effective lifetime (the old session still works, but a new login gets a fresh
     // token bound to the updated account state).
-    const token = require('../utils/auth').mintSession(admin);
+    const token = mintSession(admin);
     setSessionCookie(res, token);
 
     res.json({ success: true, message: 'Password changed' });
   })
 );
+
+// ---- media (Drive-ready placeholder; Phase 3 fills in the real Drive SDK) ----
+
+router.post('/media/upload', requireAdmin, csrfMiddleware, asyncHandler(async (req, res) => {
+  const { uploadToProvider } = require('../services/mediaService');
+  const options = (req.body && typeof req.body === 'object') ? req.body : {};
+  // The admin-api.js client sends the media opts as urlencoded form; normalize to
+  // an object for the service. The service rejects unsupported providers with a
+  // clear Phase-3 message.
+  const normalized = {}
+  if (options.provider != null) normalized.provider = options.provider;
+  if (options.fileId != null) normalized.fileId = options.fileId;
+  if (options.fileUrl != null) normalized.fileUrl = options.fileUrl;
+  if (options.fileName != null) normalized.fileName = options.fileName;
+  if (options.mimeType != null) normalized.mimeType = options.mimeType;
+  try {
+    const media = await uploadToProvider(normalized);
+    return res.json({ success: true, data: media });
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw ApiError.notFound(error.message || 'Media upload is not implemented in this phase.');
+  }
+}));
 
 // ---- health ----------------------------------------------------------------
 
