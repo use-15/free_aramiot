@@ -235,16 +235,43 @@ app.use('/admin/components', adminAssetGuard, express.static(path.join(__dirname
 }));
 
 // Fallback for /admin/* HTML pages — serve from admin/ if authenticated.
-app.get('/admin/*', adminAssetGuard, require('./middleware/adminAuth').requireAdmin, (_req, res) => {
-  // This catches /admin/pages/* etc. when requested as HTML. Asset requests are
-  // handled above by the /admin/assets and /admin/components static mounts.
-  adminStatic(_req, res, () => {
-    // If the file does not exist, return 404 JSON (admin clients expect JSON for
-    // the API; browsers hitting an HTML path get 404).
-    res.status(404).json({
+//
+// express.static (adminStatic) used here as a direct handler (not via app.use)
+// does not strip the mount prefix from req.url, so a request to /admin/articles.html
+// would be resolved as admin/admin/articles.html and 404. We resolve the file path
+// explicitly (mirroring adminStatic's .html extension fallback + fallthrough) so
+// admin HTML pages are served correctly. A path-traversal check keeps requests
+// inside the admin/ tree.
+app.get('/admin/*', adminAssetGuard, require('./middleware/adminAuth').requireAdmin, (req, res) => {
+  const ADMIN_DIR = path.resolve(path.join(__dirname, '..', 'admin'));
+  const rel = req.url.replace(/^\/admin\/?/, '') || '';
+  if (!rel) {
+    // /admin/ (trailing slash) -> serve dashboard.html, matching /admin.
+    const dh = path.join(ADMIN_DIR, 'dashboard.html');
+    if (require('fs').existsSync(dh)) {
+      return res.sendFile(dh, { maxAge: config.isProduction ? '1h' : 0 });
+    }
+    return res.redirect(302, '/admin');
+  }
+  const resolved = path.resolve(ADMIN_DIR, rel);
+  const adminRoot = ADMIN_DIR + path.sep;
+  if (!resolved.startsWith(adminRoot)) {
+    return res.status(403).json({
       success: false,
-      error: { code: 'NOT_FOUND', message: 'Admin page not found' },
+      error: { code: 'FORBIDDEN', message: 'Access denied' },
     });
+  }
+  const tryPaths = [resolved, resolved + '.html'];
+  let filePath = null;
+  for (const p of tryPaths) {
+    if (require('fs').existsSync(p)) { filePath = p; break; }
+  }
+  if (filePath) {
+    return res.sendFile(filePath, { maxAge: config.isProduction ? '1h' : 0 });
+  }
+  res.status(404).json({
+    success: false,
+    error: { code: 'NOT_FOUND', message: 'Admin page not found' },
   });
 });
 
