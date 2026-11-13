@@ -103,18 +103,18 @@ router.get('/login', (_req, res) => {
         <input type="hidden" name="_csrf" value="${token}">
 
         <div class="field">
-          <label for="admin-username">Username</label>
+          <label for="admin-username">Username or email</label>
           <input
             id="admin-username"
             name="username"
             type="text"
             autocomplete="username"
             required
-            placeholder="your username"
+            placeholder="username or email"
             inputmode="text"
             aria-describedby="username-hint"
           >
-          <small id="username-hint" class="field-hint">Your Super Admin username.</small>
+          <small id="username-hint" class="field-hint">Your Super Admin username or email address.</small>
         </div>
 
         <div class="field">
@@ -161,7 +161,7 @@ router.post(
     if (typeof username !== 'string' || username.trim() === '') {
       return res.status(400).json({
         success: false,
-        error: { code: 'BAD_REQUEST', message: 'Username is required' },
+        error: { code: 'BAD_REQUEST', message: 'Username or email is required' },
       });
     }
     if (typeof password !== 'string' || password.length === 0) {
@@ -171,12 +171,16 @@ router.post(
       });
     }
 
-    const admin = await Admin.findOne({ username: username.trim().toLowerCase() }).select('+passwordHash').exec();
+    // Accept either the username or the account email address as the identifier.
+    const identifier = username.trim().toLowerCase();
+    const admin = await Admin.findOne({ $or: [{ username: identifier }, { email: identifier }] })
+      .select('+passwordHash')
+      .exec();
     if (!admin || !verifyPassword(password, admin.passwordHash)) {
       // Unified message to avoid username enumeration via timing/responses.
       return res.status(401).json({
         success: false,
-        error: { code: 'UNAUTHORIZED', message: 'Invalid username or password' },
+        error: { code: 'UNAUTHORIZED', message: 'Invalid username/email or password' },
       });
     }
 
@@ -340,18 +344,18 @@ function loginPageHandler(req, res) {
         <input type="hidden" name="_csrf" value="${token}">
 
         <div class="field">
-          <label for="admin-username">Username</label>
+          <label for="admin-username">Username or email</label>
           <input
             id="admin-username"
             name="username"
             type="text"
             autocomplete="username"
             required
-            placeholder="your username"
+            placeholder="username or email"
             inputmode="text"
             aria-describedby="username-hint"
           >
-          <small id="username-hint" class="field-hint">Your Super Admin username.</small>
+          <small id="username-hint" class="field-hint">Your Super Admin username or email address.</small>
         </div>
 
         <div class="field">

@@ -246,7 +246,7 @@ Every route is behind `requireAdmin` except the auth endpoints
 | --- | --- | --- |
 | GET | `/api/admin/auth/csrf-token` | Fresh submit token + CSRF cookie |
 | GET | `/api/admin/auth/session` | Current session state |
-| POST | `/api/admin/auth/login` | urlencoded `username`, `password`, `_csrf` |
+| POST | `/api/admin/auth/login` | urlencoded `username` (username **or** account email), `password`, `_csrf` |
 | POST | `/api/admin/auth/logout` | Clears the session cookie |
 | POST | `/api/admin/auth/init` | Creates the first Super Admin (`X-Admin-Init-Secret`) |
 | GET | `/api/admin/dashboard` | MongoDB-backed statistics |
@@ -273,8 +273,9 @@ Every route is behind `requireAdmin` except the auth endpoints
   `Article`, `Project`, `Program`, `Publication` and `Resource` each point at a
   `Category`, and categories can be nested one level via `parentCategory`.
 * Public GET routes return **published** documents only. Content with a future
-  `publishedAt` / `publicationDate` stays hidden, and a published document with
-  no date is visible.
+  `publishedAt` / `publicationDate` stays hidden. Publishing from the dashboard
+  stamps that date automatically when none is given, and a published document
+  whose date is still missing stays hidden.
 * `Organization` is a single document edited from the admin dashboard.
 * `Admin` holds Super Admin accounts only (`username` and `email` unique,
   `passwordHash` bcrypt with 12 rounds and `select: false`, `role` only
@@ -356,6 +357,11 @@ Replace all of it through the Super Admin dashboard before launch.
   a traversal check.
 * `frontend/config/config.js` and `backend/bin/init-admin.js` still pointed at
   port 5000; both now use 3000.
+* Publishing a page or article from the dashboard never set `publishedAt`, and
+  the public filter requires a date, so newly published admin content silently
+  stayed invisible on the public site. `applyPublishDate` now stamps the date on
+  create/update (an explicit date is left alone, so scheduling still works).
+* Login only matched `username`; it now also matches the account email address.
 
 ### Known gaps
 

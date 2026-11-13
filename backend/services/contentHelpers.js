@@ -434,8 +434,27 @@ function adminSort(model, sortString, defaultSort) {
   return { [field]: dir };
 }
 
+/**
+ * Stamp a publish date when a document is published without one.
+ *
+ * Pages, articles and publications are only publicly visible when `status` is
+ * `published` AND their date field is set and already reached (see
+ * `visibilityFilter` in contentService). Pressing "Publish" in the dashboard
+ * without that stamp produced content that never appeared on the public site.
+ * An explicit date is left untouched, so scheduled publishing still works.
+ */
+function applyPublishDate(Model, update, dateField) {
+  if (!update || update.status !== 'published') return update;
+  const field =
+    dateField || ['publishedAt', 'publicationDate'].find((name) => Model.schema.path(name));
+  if (!field || update[field]) return update;
+  update[field] = new Date();
+  return update;
+}
+
 module.exports = {
   adminUpdate,
+  applyPublishDate,
   safeDoc,
   safeDocs,
   adminSort,

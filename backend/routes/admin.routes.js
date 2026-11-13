@@ -23,7 +23,7 @@ const {
 const { csrfTokenFactory, csrfProtection, verifyPassword, hashPassword, mintSession, setSessionCookie } = require('../utils/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
-const { safeDoc, safeDocs, adminUpdate, adminSort } = require('../services/contentHelpers');
+const { safeDoc, safeDocs, adminUpdate, adminSort, applyPublishDate } = require('../services/contentHelpers');
 const { MODEL_FIELDS } = require('../services/modelsToFields');
 const config = require('../config/env');
 
@@ -184,6 +184,8 @@ function adminCreate(Model, options = {}) {
       update.slug = slugify(update.title);
     }
 
+    applyPublishDate(Model, update);
+
     const doc = await Model.create(update);
     res.status(201).json({ success: true, message: 'Created', data: safeDoc(doc) });
   });
@@ -201,6 +203,8 @@ function adminUpdateById(Model, options = {}) {
     if (Object.keys(update).length === 0) {
       throw ApiError.badRequest('No fields to update');
     }
+
+    applyPublishDate(Model, update);
 
     const doc = await Model.findByIdAndUpdate(id, update, {
       new: true,
@@ -222,6 +226,8 @@ function adminUpdateBySlug(Model, slugField = 'slug', options = {}) {
     const allowed = MODEL_FIELDS[options.modelName] || {};
     const update = adminUpdate(allowed, req.body);
     if (Object.keys(update).length === 0) throw ApiError.badRequest('No fields to update');
+
+    applyPublishDate(Model, update);
 
     const doc = await Model.findOneAndUpdate({ [slugField]: slug }, update, {
       new: true,
