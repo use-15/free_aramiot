@@ -172,7 +172,21 @@ window.ARAMIOT = window.ARAMIOT || {};
       '<header class="site-header">' +
         '<div class="container header-inner">' +
           '<a class="brand" href="' + prefix + 'index.html" aria-label="' + escapeHtml(name) + ' home">' +
-            '<span class="brand-mark" aria-hidden="true">A</span>' +
+            (function () {
+              var logoUrl =
+                organization && organization.logo && organization.logo.url
+                  ? organization.logo.url
+                  : '';
+              if (logoUrl) {
+                return (
+                  '<img class="brand-logo" ' +
+                    'src="' + escapeHtml(logoUrl) + '" ' +
+                    'alt="' + escapeHtml(name) + ' logo" ' +
+                    'loading="eager">'
+                );
+              }
+              return '<span class="brand-mark" aria-hidden="true">A</span>';
+            })() +
             '<span class="brand-text">' +
               '<span class="brand-name">' + escapeHtml(name) + '</span>' +
               '<span class="brand-kicker">Health &middot; Education &middot; Advocacy</span>' +

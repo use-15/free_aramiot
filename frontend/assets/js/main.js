@@ -320,6 +320,9 @@ window.ARAMIOT = window.ARAMIOT || {};
   /* ---------------- boot ---------------- */
 
   function boot() {
+    // Render the header immediately with a blank organization so the navigation is
+    // visible right away. It is re-rendered with the real organization data (and the
+    // logo image, when one is configured) as soon as the organization API responds.
     layout.renderHeader(null);
     layout.renderDialogs();
     initNavigation();
@@ -332,11 +335,13 @@ window.ARAMIOT = window.ARAMIOT || {};
       .getOrganization()
       .then(function (response) {
         ARAMIOT.organization = response.data;
+        layout.renderHeader(response.data);
         layout.renderFooter(response.data);
         return response.data;
       })
       .catch(function () {
         ARAMIOT.organization = null;
+        layout.renderHeader(null);
         layout.renderFooter(null);
         return null;
       })

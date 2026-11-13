@@ -60,6 +60,11 @@ const organization = {
     country: 'Sample country',
   },
   socialLinks: {},
+  logo: {
+    url:
+      'https://raw.githubusercontent.com/use-15/free_aramiot/main/armiot%20png_095303.png',
+    alt: 'ARAMIOT logo',
+  },
 };
 
 const pages = [

@@ -119,6 +119,15 @@ img { max-width: 100%; height: auto; display: block; }
 
 .brand:hover { color: var(--primary); text-decoration: none; }
 
+.brand-logo {
+  display: block;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  object-fit: contain;
+  object-position: center;
+}
+
 .brand-mark {
   display: grid;
   place-items: center;

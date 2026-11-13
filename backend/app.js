@@ -283,7 +283,10 @@ app.use('/admin/components', adminAssetGuard, express.static(path.join(__dirname
 // inside the admin/ tree.
 app.get('/admin/*', adminAssetGuard, require('./middleware/adminAuth').requireAdmin, (req, res) => {
   const ADMIN_DIR = path.resolve(path.join(__dirname, '..', 'admin'));
-  const rel = req.url.replace(/^\/admin\/?/, '') || '';
+  // Strip the query string so `?id=...` (used by the edit flow) does not end up as
+  // part of the file path we look for. The page JS receives the id from the URL and
+  // opens the editor itself; we only ever need to serve the static HTML file here.
+  const rel = req.url.replace(/^\/admin\/?/, '').split('?')[0] || '';
   if (!rel) {
     // /admin/ (trailing slash) -> serve dashboard.html, matching /admin.
     const dh = path.join(ADMIN_DIR, 'dashboard.html');
