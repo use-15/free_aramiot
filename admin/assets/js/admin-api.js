@@ -159,7 +159,11 @@
     /** Fetch the CSRF submit token (sets the cookie). Call once on page load. */
     refreshCsrf: function () {
       return request('/auth/csrf-token', { method: 'GET' }).then(function (res) {
-        return res.data.csrfToken;
+        // This endpoint answers with the token at the top level ({ csrfToken })
+        // rather than inside the usual { data: … } envelope. Reading only
+        // res.data.csrfToken threw "Cannot read properties of undefined" and left
+        // the dashboard with no statistics. Accept both shapes.
+        return (res && res.data && res.data.csrfToken) || (res && res.csrfToken) || null;
       });
     },
 

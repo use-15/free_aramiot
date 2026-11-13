@@ -79,6 +79,10 @@
     var xhr = new global.XMLHttpRequest();
     xhr.open('POST', '/api/admin/auth/login', true);
     xhr.setRequestHeader('Accept', 'application/json');
+    // Required: without an explicit Content-Type the browser sends the body as
+    // text/plain, express.urlencoded() never parses it, req.body._csrf is empty and
+    // every sign-in is rejected with "invalid csrf token".
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     // The CSRF cookie is already set on the GET /login page; the browser sends it
     // automatically with credentials. We send the form urlencoded with _csrf.
     xhr.withCredentials = true;

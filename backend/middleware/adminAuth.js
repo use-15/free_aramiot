@@ -64,9 +64,22 @@ async function resolveAdmin(decoded) {
  * so the admin frontend can react (redirect to login, show the message). The public
  * website is unaffected because public routes are not mounted through this middleware.
  */
+/**
+ * True when a browser is navigating to an admin page rather than calling the API.
+ * Browsers send `Accept: text/html` for navigation; the admin JS always asks for
+ * JSON. Unauthenticated page loads get a redirect to the login form instead of a
+ * raw JSON error body rendered in the tab (which is what an expired session used
+ * to show on /admin/dashboard.html and friends).
+ */
+function wantsHtmlPage(req) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return false;
+  return String(req.headers.accept || '').indexOf('text/html') !== -1;
+}
+
 const requireAdmin = asyncHandler(async (req, res, next) => {
   const decoded = readSession(req);
   if (!decoded) {
+    if (wantsHtmlPage(req)) return res.redirect(302, '/admin/login');
     return next(
       ApiError.unauthorized('Authentication is required to access this resource.')
     );
@@ -76,6 +89,7 @@ const requireAdmin = asyncHandler(async (req, res, next) => {
   if (!admin) {
     // Token was syntactically valid but pointed at a stale/invalid account —
     // treat as unauthenticated so the frontend re-prompts.
+    if (wantsHtmlPage(req)) return res.redirect(302, '/admin/login');
     return next(
       ApiError.unauthorized('Your session is no longer valid. Please sign in again.')
     );

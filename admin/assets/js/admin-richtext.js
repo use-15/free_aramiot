@@ -215,11 +215,10 @@
         var id = ta.id || ('f-' + name);
         if (!ta.id) ta.id = id;
 
-        // Do not double-wrap: if Quill already initialized this node, skip.
-        if (editors[id]) {
-          pruneEditor(id);
-          return;
-        }
+        // Idempotent: if this textarea already has an editor, leave it alone.
+        // Re-scanning used to destroy the live editor and then skip rebuilding it,
+        // which left only the first rich-text field with a working editor.
+        if (editors[id]) return;
 
         // Sync the textarea's current value (for edit) into the editor once it
         // is created, then save back on every change and on modal save.
@@ -276,6 +275,7 @@
             destroy: function () {
               try { editor.off('text-change', handler); } catch (e) {}
               try { editor.destroy(); } catch (e) {}
+              try { ta.style.display = ''; ta.removeAttribute('aria-hidden'); } catch (e) {}
               delete editors[id];
             },
           };
@@ -283,6 +283,11 @@
           // Ensure the textarea reflects the editor content now (used by
           // collectFormData / prefillForm).
           handler();
+
+          // The editor replaces the textarea visually; without this the raw
+          // textarea stayed visible next to (and below) the Quill editor.
+          ta.style.display = 'none';
+          ta.setAttribute('aria-hidden', 'true');
         } catch (err) {
           // If Quill throws (e.g. re-init or selector issue), leave the
           // textarea alone and let the form work as plain text.
@@ -313,6 +318,27 @@
         // Editor may have been removed by the DOM during a modal rebuild.
         e.destroy();
       }
+    });
+  }
+
+  /**
+   * Fill rich-text textareas from field descriptors before the editors attach.
+   *
+   * admin-settings.js calls this after rendering a settings form, passing the
+   * field list (each descriptor carries its own `value`). This function used to be
+   * exported without ever being defined, which threw a ReferenceError while this
+   * module was loading — the whole module then failed, ARAMIOT_ADMIN.richtext was
+   * never published and no Quill editor attached anywhere.
+   */
+  function prefillRichtextFields(form, fields) {
+    if (!form || !fields) return;
+    fields.forEach(function (field) {
+      if (!field || !field.key) return;
+      var el = form.elements ? form.elements['f-' + field.key] : null;
+      if (!el || el.tagName !== 'TEXTAREA') return;
+      if (!el.hasAttribute('data-richtext')) return;
+      if (field.value === undefined || field.value === null) return;
+      el.value = String(field.value);
     });
   }
 

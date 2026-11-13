@@ -58,7 +58,7 @@
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, placeholder: 'e.g. Our Approach' },
       { key: 'section', label: 'Section', type: 'select', required: true, options: ['home','overview','about','health','education','advocacy','our-work','resources','get-involved','contact'] },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from title if blank', help: 'Lowercase, hyphenated. Leave blank to generate from the title.' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from title if blank', help: 'Lowercase, hyphenated. Leave blank to generate from the title.' },
       { key: 'excerpt', label: 'Excerpt', type: 'textarea', richtext: true, placeholder: 'Short summary (HTML)', help: 'Used on section listings.' },
       { key: 'content', label: 'Content', type: 'textarea', richtext: true, required: true, placeholder: 'Page content (HTML)' },
       { key: 'featuredImageUrl', label: 'Featured image URL', type: 'text', placeholder: 'https://…' },
@@ -83,7 +83,7 @@
     params: { filterFields: { tag: 'tags' }, searchFields: ['title', 'excerpt', 'tags'] },
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Article headline' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from title if blank' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from title if blank' },
       { key: 'excerpt', label: 'Excerpt', type: 'textarea', richtext: true, placeholder: 'Short summary (HTML) shown in listings' },
       { key: 'content', label: 'Content', type: 'textarea', required: true, placeholder: 'Article body' },
       { key: 'author', label: 'Author', type: 'text', placeholder: 'Byline' },
@@ -111,7 +111,7 @@
     enumMeta: { scopes: { list: ['articles','projects','programs','publications','resources','general'] } },
     fields: [
       { key: 'name', label: 'Name', type: 'text', required: true, placeholder: 'e.g. Mental Health' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from name if blank' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from name if blank' },
       { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Short description of the category' },
       {
         key: 'scopes',
@@ -139,7 +139,7 @@
     params: { searchFields: ['title', 'summary', 'location'] },
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Project title' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from title if blank' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from title if blank' },
       { key: 'summary', label: 'Summary', type: 'textarea', placeholder: 'Short summary for listings' },
       { key: 'description', label: 'Description', type: 'textarea', richtext: true, placeholder: 'Full project description (HTML)' },
       { key: 'objectives', label: 'Objectives', type: 'tags', placeholder: 'One objective per line' },
@@ -169,7 +169,7 @@
     params: { searchFields: ['title', 'description', 'targetAudience'] },
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Program title' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from title if blank' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from title if blank' },
       { key: 'description', label: 'Description', type: 'textarea', richtext: true, required: true, placeholder: 'What the program does (HTML)' },
       { key: 'objectives', label: 'Objectives', type: 'tags', placeholder: 'One objective per line' },
       { key: 'activities', label: 'Activities', type: 'tags', placeholder: 'One activity per line' },
@@ -221,7 +221,7 @@
     enumMeta: { publicationType: { list: ['report','research-paper','policy-brief','technical-report','other'] } },
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Publication title' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from title if blank' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from title if blank' },
       { key: 'abstract', label: 'Abstract', type: 'textarea', richtext: true, placeholder: 'Short abstract (HTML)' },
       { key: 'authors', label: 'Authors', type: 'tags', placeholder: 'One author per line' },
       { key: 'publicationType', label: 'Publication type', type: 'select', required: true, options: ['report','research-paper','policy-brief','technical-report','other'] },
@@ -251,7 +251,7 @@
     enumMeta: { resourceType: { list: ['learning-material','guideline','toolkit','dataset','other'] } },
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, placeholder: 'Resource title' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'auto-generated from title if blank' },
+      { key: 'slug', label: 'Slug', type: 'text', placeholder: 'auto-generated from title if blank' },
       { key: 'description', label: 'Description', type: 'textarea', richtext: true, placeholder: 'What this resource covers (HTML)' },
       { key: 'resourceType', label: 'Resource type', type: 'select', required: true, options: ['learning-material','guideline','toolkit','dataset','other'] },
       { key: 'category', label: 'Category', type: 'reference', refModel: 'categories', refLabelField: 'name', refValueField: '_id', required: true, placeholder: 'Select a category' },
@@ -429,7 +429,9 @@
     var meta = opts.meta;
     var items = opts.items;
 
-    var skeleton = listFieldsHtml(config, null);
+    // listFieldsHtml(config, doc) builds the table with the document it is given;
+    // passing null here threw "Cannot read properties of null (reading 'createElement')".
+    var skeleton = listFieldsHtml(config, doc);
     container.innerHTML = '';
     container.appendChild(skeleton.table);
 
@@ -446,11 +448,14 @@
     }
 
     var tbody = skeleton.tbody;
-    items.forEach(function (doc) {
-      var tr = doc.createElement('tr');
+    // The loop parameter used to be called `doc`, which shadowed the module-level
+    // `doc` (the document) and made doc.createElement() throw inside every row.
+    var docEl = doc;
+    items.forEach(function (item) {
+      var tr = docEl.createElement('tr');
       config.listFields.forEach(function (f) {
-        var td = doc.createElement('td');
-        var val = doc[f.key];
+        var td = docEl.createElement('td');
+        var val = item[f.key];
         if (f.pill) {
           td.innerHTML = pillHtml(val);
           tr.appendChild(td);
@@ -488,37 +493,38 @@
         tr.appendChild(td);
       });
 
-      var actionsTd = doc.createElement('td');
+      var actionsTd = docEl.createElement('td');
       actionsTd.className = 'actions';
-      var detailUrl = '/' + config.slug + '/' + (doc._id || '');
-      var editBtn = link('Edit', '/admin/' + config.slug + '.html?id=' + encodeURIComponent(String(doc._id)), 'btn-admin--secondary');
+      var editBtn = link('Edit', '/admin/' + config.slug + '.html?id=' + encodeURIComponent(String(item._id)), 'btn-admin--secondary');
       actionsTd.appendChild(editBtn);
       if (config.inbox) {
-        var statusSelect = makeStatusSelect(doc.status, config.statuses, function (newStatus) {
-          updateInboxStatus(config.slug, doc._id, newStatus, opts);
+        var statusSelect = makeStatusSelect(item.status, config.statuses, function (newStatus) {
+          updateInboxStatus(config.slug, item._id, newStatus, opts);
         });
         actionsTd.appendChild(statusSelect);
         var delBtn = link('Delete', '#', 'btn-admin--ghost');
         delBtn.addEventListener('click', function (e) {
           e.preventDefault();
-          var label = doc.fullName || doc.organizationName || doc.name || 'this item';
+          var label = item.fullName || item.organizationName || item.name || 'this item';
           if (!confirm('Permanently delete \"' + esc(label) + '\"? This cannot be undone.')) return;
-          deleteInboxItem(config.slug, doc._id, opts);
+          deleteInboxItem(config.slug, item._id, opts);
         });
         actionsTd.appendChild(delBtn);
       } else {
         var archiveBtn = link('Archive', '#', 'btn-admin--ghost');
         archiveBtn.addEventListener('click', function (e) {
           e.preventDefault();
-          if (!confirm('Archive \"' + esc(doc.title || doc.name || doc.fullName || doc.organizationName || 'this item') + '\"?')) return;
-          archiveItem(config.slug, doc._id, opts);
+          if (!confirm('Archive \"' + esc(item.title || item.name || item.fullName || item.organizationName || 'this item') + '\"?')) return;
+          archiveItem(config.slug, item._id, opts);
         });
         actionsTd.appendChild(archiveBtn);
       }
       tr.appendChild(actionsTd);
       tbody.appendChild(tr);
     });
-    container.appendChild(tbody);
+    // The rows belong inside the <table>; appending the tbody to the container
+    // instead left the table empty and the list looked broken.
+    skeleton.table.appendChild(tbody);
     renderPagination(meta, container, opts);
   }
 
@@ -975,7 +981,11 @@
 
   // ---------- modal ----------
 
-  function openModal(config, doc, isNew, onSave, onCancel) {
+  // NOTE: the second parameter is the record being edited (null when creating).
+  // It used to be called `doc`, which shadowed the module-level `doc` (document)
+  // and made doc.getElementById() throw "Cannot read properties of null" as soon
+  // as "+ New …" was clicked, so no editor ever opened.
+  function openModal(config, record, isNew, onSave, onCancel) {
     buildModal();
     var modal = doc.getElementById('admin-modal');
     if (!modal) return;
@@ -983,7 +993,7 @@
     var instance = bs ? bs.Modal.getOrCreateInstance(modal) : null;
 
     modalState.config = config;
-    modalState.doc = doc;
+    modalState.doc = record;
     modalState.isNew = isNew;
     modalState.saving = false;
     modalState.onSave = onSave || null;
@@ -1008,9 +1018,9 @@
       form.appendChild(fieldHtml(f));
     });
 
-    if (doc && !isNew) {
-      prefillForm(form, config, doc);
-      prefillRichtextFields(form, config, doc);
+    if (record && !isNew) {
+      prefillForm(form, config, record);
+      prefillRichtextFields(form, config, record);
     }
 
     if (saveBtn) {
@@ -1023,7 +1033,7 @@
     }
 
     // Populate reference selects (async) then show the modal.
-    var refPromises = populateReferenceSelects(form, doc);
+    var refPromises = populateReferenceSelects(form, record);
     if (refPromises.length) {
       Promise.all(refPromises).then(function () {
         if (instance) instance.show();
@@ -1301,6 +1311,70 @@
       });
   }
 
+  /**
+   * Fetch one page of the current section and render it.
+   *
+   * init(), the pagination links and the reload after a save all call this, but
+   * the function itself was missing: every content page threw
+   * "loadListFor is not defined" on load and stayed on its "Loading …" state, so
+   * no list, edit or publish action was reachable from the dashboard.
+   */
+  function loadListFor(page) {
+    var config = page.config;
+    var loading = doc.getElementById('list-loading');
+    var container = doc.getElementById('list-container');
+    if (!container) return;
+
+    if (loading) loading.classList.remove('admin-hide');
+    container.classList.add('admin-hide');
+
+    var params = parseListParams(config);
+
+    api
+      .list(config.slug, params)
+      .then(function (res) {
+        var items = (res && res.data) || [];
+        var meta = (res && res.meta) || null;
+
+        if (loading) loading.classList.add('admin-hide');
+        container.classList.remove('admin-hide');
+
+        var count = doc.getElementById('list-count');
+        if (count) {
+          var total = meta && typeof meta.total === 'number' ? meta.total : items.length;
+          count.textContent = total + ' total';
+        }
+
+        renderList({
+          // archiveItem/deleteInboxItem reload the list through
+          // opts.config.loadList, so hand them a config that carries it.
+          config: Object.assign({}, config, {
+            loadList: function () {
+              loadListFor(page);
+            },
+          }),
+          container: container,
+          meta: meta,
+          items: items,
+          pageUrl: function (target) {
+            return pageUrl(config, target);
+          },
+          reload: function () {
+            loadListFor(page);
+          },
+        });
+      })
+      .catch(function (error) {
+        if (loading) loading.classList.add('admin-hide');
+        container.classList.remove('admin-hide');
+        container.innerHTML = '';
+        showAlert(
+          (error && error.message) || 'Could not load ' + config.label + '. Please try again.',
+          'error'
+        );
+      });
+  }
+
   ARAMIOT.content = {
     init: function () {
       var config = SECTIONS[window.ARAMIOT_ADMIN_SECTION];
@@ -1323,13 +1397,20 @@
     },
   };
 
+  function boot() {
+    if (window.ARAMIOT_ADMIN_SECTION) {
+      ARAMIOT.content.init();
+      wireNewButton(SECTIONS[window.ARAMIOT_ADMIN_SECTION]);
+      wireEditFromUrl(SECTIONS[window.ARAMIOT_ADMIN_SECTION]);
+    }
+  }
+
+  // This file is loaded with `defer`, so by the time it runs readyState is already
+  // "interactive" and DOMContentLoaded is never awaited — without the else branch
+  // the list was never fetched and every content page stayed on "Loading …".
   if (doc.readyState === 'loading') {
-    doc.addEventListener('DOMContentLoaded', function () {
-      if (window.ARAMIOT_ADMIN_SECTION) {
-        ARAMIOT.content.init();
-        wireNewButton(SECTIONS[window.ARAMIOT_ADMIN_SECTION]);
-        wireEditFromUrl(SECTIONS[window.ARAMIOT_ADMIN_SECTION]);
-      }
-    });
+    doc.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
   }
 })(typeof window !== 'undefined' ? window : this);

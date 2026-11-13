@@ -99,22 +99,61 @@ if (config.isProduction) {
 // ---- CORS ------------------------------------------------------------------
 
 /**
- * CORS is only needed when the frontend is served from another origin.
- * Requests without an Origin header (same-origin, curl, tests) are always allowed.
- * An empty CORS_ORIGINS list means "allow any origin" (development default).
+ * Decide whether a browser Origin may call the API.
+ *
+ * Browsers send `Origin` on every POST/PUT/DELETE, including same-origin ones.
+ * Checking only the CORS_ORIGINS allow-list therefore rejected writes from any
+ * hostname the app was actually served on but that was missing from the list —
+ * a preview hostname, or the production domain. Sign-in failed with
+ * "Origin … is not allowed to call this API" even though the request came from
+ * the app itself. Three cases are accepted:
+ *
+ *   1. no Origin header at all (curl, tests, server-to-server calls);
+ *   2. same-origin requests, detected from `Sec-Fetch-Site` (which survives the
+ *      Host rewriting some proxies do) or by matching the Origin host to the
+ *      request Host / X-Forwarded-Host;
+ *   3. origins listed in CORS_ORIGINS, or any origin when the list is empty
+ *      (the development default).
+ *
+ * Anything else is a genuine cross-site call from an unknown origin and is
+ * rejected. Cross-origin writes are also covered by the CSRF token, so this is
+ * defence in depth, not the only barrier.
  */
+function originIsAllowed(req, origin) {
+  if (!origin) return true;
+  if (config.corsOrigins.length === 0 || config.corsOrigins.includes(origin)) return true;
+
+  const fetchSite = String(req.headers['sec-fetch-site'] || '').toLowerCase();
+  if (fetchSite === 'same-origin' || fetchSite === 'none') return true;
+
+  let originHost;
+  try {
+    originHost = new URL(origin).host;
+  } catch (error) {
+    return false;
+  }
+
+  const requestHosts = [req.headers.host, req.headers['x-forwarded-host']]
+    .filter(Boolean)
+    .map((host) => String(host).split(',')[0].trim());
+
+  return requestHosts.indexOf(originHost) !== -1;
+}
+
 app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      if (config.corsOrigins.length === 0 || config.corsOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(ApiError.forbidden(`Origin ${origin} is not allowed to call this API`));
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'X-Admin-Init-Secret', 'X-Csrf-Token'],
-    maxAge: 600,
+  cors((req, callback) => {
+    callback(null, {
+      origin(origin, cb) {
+        if (originIsAllowed(req, origin)) return cb(null, true);
+        return cb(ApiError.forbidden(`Origin ${origin} is not allowed to call this API`));
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Accept', 'X-Admin-Init-Secret', 'X-Csrf-Token'],
+      // The admin session is a cookie, so cross-origin callers (when explicitly
+      // allow-listed) need credential support.
+      credentials: true,
+      maxAge: 600,
+    });
   })
 );
 

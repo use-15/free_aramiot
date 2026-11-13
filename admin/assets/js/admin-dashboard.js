@@ -131,7 +131,7 @@
     if (!tbody) return;
     var s = data.data.summary;
     var rows = [
-      ['Pages', s.publishedPages, 0],
+      ['Pages', s.publishedPages, s.draftPages],
       ['Articles', s.publishedArticles, s.draftArticles],
       ['Projects', s.publishedProjects, s.draftProjects],
       ['Programs', s.publishedPrograms, s.draftPrograms],
@@ -153,48 +153,21 @@
       .join('');
   }
 
+  /**
+   * Dashboard-only chrome: environment badge and footer version.
+   *
+   * The account, "View site" and "Sign out" controls used to be built here,
+   * which meant only this page had them. They are now rendered by
+   * admin-topbar.js, which every admin page loads.
+   */
   function renderUser(data) {
-    var topbarUser = $('topbar-user');
-    var signedOut = $('topbar-signed-out');
     var env = $('dashboard-env');
     var version = $('footer-version');
-    if (!topbarUser) return;
-    var role = data.data.role || '';
-    var username = data.data.username || '';
-    var userHtml =
-      '<span class="role-pill">' + escapeHtml(role) + '</span>' +
-      '<span style="font-weight:600;">' + escapeHtml(username) + '</span>' +
-      '<button class="btn-admin btn-admin--ghost" id="logout-btn" type="button">Sign out</button>';
-    // Remove the signed-out link and re-render.
-    if (signedOut && signedOut.parentNode) signedOut.parentNode.removeChild(signedOut);
-    topbarUser.innerHTML = userHtml;
 
     if (env) env.textContent = data.data.server ? data.data.server.environment : '';
     if (version && data.data.server && data.data.server.version) {
       version.textContent = 'v' + escapeHtml(data.data.server.version);
     }
-
-    var logoutBtn = $('logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', function () {
-        if (!confirm('Sign out of the admin dashboard?')) return;
-        performLogout();
-      });
-    }
-  }
-
-  function performLogout() {
-    if (!api || !api.logout) {
-      win.location.href = '/admin/login';
-      return;
-    }
-    api.logout()
-      .then(function () {
-        win.location.href = '/admin/login';
-      })
-      .catch(function () {
-        win.location.href = '/admin/login';
-      });
   }
 
   function setLoading(show) {

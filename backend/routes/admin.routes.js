@@ -273,9 +273,8 @@ const csrfMiddleware = csrf.doubleCsrfProtection;
 
 router.get('/dashboard', requireAdmin, asyncHandler(async (req, res) => {
   const [
-    publishedArticles,
-    draftArticles,
-    publishedPages,
+    articles,
+    pages,
     projects,
     programs,
     publications,
@@ -286,7 +285,6 @@ router.get('/dashboard', requireAdmin, asyncHandler(async (req, res) => {
     pendingInquiries,
     impact,
   ] = await Promise.all([
-    Admin.estimatedDocumentCount().then((n) => n).catch(() => null),
     // Articles
     (async () => {
       const total = await require('../models/Article').countDocuments({ status: 'published' }).exec();
@@ -342,9 +340,10 @@ router.get('/dashboard', requireAdmin, asyncHandler(async (req, res) => {
     success: true,
     data: {
       summary: {
-        publishedArticles,
-        draftArticles,
-        publishedPages,
+        publishedArticles: articles.published,
+        draftArticles: articles.drafts,
+        publishedPages: pages.published,
+        draftPages: pages.drafts,
         publishedProjects: projects.published,
         draftProjects: projects.drafts,
         publishedPrograms: programs.published,

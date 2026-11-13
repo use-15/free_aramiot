@@ -166,11 +166,13 @@ function csrfProtection() {
       getSessionIdentifier: (req) => {
         const sessionId = req.cookies && req.cookies['aramiot_admin_session'];
         if (sessionId) return 'admin-session:' + sessionId;
-        const ua = (req.headers['user-agent'] || '').slice(0, 128);
-        const ip = (req.headers['x-forwarded-for'] && req.headers['x-forwarded-for'].split(',')[0].trim())
-          || req.socket?.remoteAddress
-          || 'unknown';
-        return 'csrf:' + ip + ':' + ua;
+        // Pre-login requests have no session yet. This must NOT be derived from
+        // IP + User-Agent: behind a proxy or on a mobile network those can differ
+        // between the GET /admin/login that minted the token and the POST that
+        // submits it, which rejects a perfectly valid sign-in with "invalid csrf
+        // token". The double-submit cookie is what binds the token to the browser.
+        // Once signed in, tokens are bound to the session id above.
+        return 'anonymous';
       },
       cookieName: 'aramiot_admin_csrftoken',
       cookieOptions: {

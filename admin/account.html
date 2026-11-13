@@ -76,6 +76,8 @@
     };
   </script>
   <script src="/admin/assets/js/admin-api.js"></script>
+  <script src="/admin/assets/js/admin-topbar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="/admin/assets/js/admin-settings.js" defer></script>
   <script>
     (function (global) {
@@ -84,7 +86,10 @@
       var doc = win.document;
       var ARAMIOT = global.ARAMIOT_ADMIN || {};
       var api = ARAMIOT.api;
-      var settings = ARAMIOT.settings;
+      // admin-settings.js is loaded with `defer`, so it does not exist yet when this
+      // inline script runs. Resolve it lazily at call time instead of capturing
+      // undefined here (which broke the account/organization/settings forms).
+      function settingsModule() { return (global.ARAMIOT_ADMIN || {}).settings; }
 
       function showAlert(message, kind) {
         var alertEl = doc.getElementById('page-alert');
@@ -95,10 +100,14 @@
         setTimeout(function () { alertEl.classList.add('admin-hide'); }, 6000);
       }
 
+      // Declared at module scope: loadProfile() also writes into #account-id, and
+      // it used to reference a variable that only existed inside showLoading()
+      // ("idEl is not defined"), so the account form never rendered.
+      var idEl = doc.getElementById('account-id');
+
       function showLoading(show) {
         var loading = doc.getElementById('loading');
         var form = doc.getElementById('form-container');
-        var idEl = doc.getElementById('account-id');
         if (!loading || !form) return;
         if (show) {
           loading.classList.remove('admin-hide');
@@ -124,7 +133,7 @@
               }
               if (idEl) idEl.textContent = 'ID: ' + (admin._id || '');
               var container = doc.getElementById('form-container');
-              settings.renderAccountForm(container, admin);
+              settingsModule().renderAccountForm(container, admin);
             })
             .catch(function (err) {
               showLoading(false);

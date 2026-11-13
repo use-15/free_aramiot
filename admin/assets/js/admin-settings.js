@@ -66,6 +66,7 @@
       ta.id = 'f-' + f.key;
       ta.name = f.key;
       ta.rows = 4;
+      if (f.value !== undefined && f.value !== null) ta.value = String(f.value);
       if (f.placeholder) ta.placeholder = f.placeholder;
       if (f.required) ta.required = true;
       wrap.appendChild(ta);
@@ -105,6 +106,9 @@
       cb.type = 'checkbox';
       cb.id = 'f-' + f.key;
       cb.name = f.key;
+      // Without this the box always rendered unchecked, so saving the account
+      // form silently disabled the account.
+      cb.checked = !!f.value;
       cbWrap.appendChild(cb);
       var cbLabel = doc.createElement('label');
       cbLabel.setAttribute('for', 'f-' + f.key);
@@ -119,6 +123,7 @@
       input.id = 'f-' + f.key;
       input.name = f.key;
       input.type = 'date';
+      if (f.value) input.value = String(f.value).slice(0, 10);
       if (f.placeholder) input.placeholder = f.placeholder;
       if (f.required) input.required = true;
       wrap.appendChild(input);
@@ -131,6 +136,7 @@
       input.id = 'f-' + f.key;
       input.name = f.key;
       input.type = 'number';
+      if (f.value !== undefined && f.value !== null && f.value !== '') input.value = String(f.value);
       if (f.placeholder) input.placeholder = f.placeholder;
       if (f.required) input.required = true;
       if (f.min !== undefined) input.min = f.min;
@@ -144,6 +150,7 @@
       input.id = 'f-' + f.key;
       input.name = f.key;
       input.type = 'email';
+      if (f.value !== undefined && f.value !== null) input.value = String(f.value);
       if (f.placeholder) input.placeholder = f.placeholder;
       if (f.required) input.required = true;
       wrap.appendChild(input);
@@ -156,6 +163,9 @@
     input.id = 'f-' + f.key;
     input.name = f.key;
     input.type = 'text';
+    // Field values were never copied into the inputs, so every settings form
+    // rendered empty and saving it would have wiped the stored document.
+    if (f.value !== undefined && f.value !== null) input.value = String(f.value);
     if (f.placeholder) input.placeholder = f.placeholder;
     if (f.required) input.required = true;
     wrap.appendChild(input);
@@ -491,6 +501,10 @@
     pwdFooter.appendChild(pwdSave);
     pwdForm.appendChild(pwdFooter);
     pwdWrap.appendChild(pwdForm);
+    // The profile form (email + active) was built but never attached, so the
+    // account page showed only the password card and the email could not be
+    // changed at all.
+    container.appendChild(form);
     container.appendChild(pwdWrap);
 
     return form;

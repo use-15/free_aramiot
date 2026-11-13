@@ -566,3 +566,73 @@
 .admin-hide {
   display: none;
 }
+
+/* ---------- topbar account controls (admin-topbar.js) ---------- */
+
+.admin-topbar-nav .nav-link.active {
+  color: var(--admin-primary);
+  background: #e8f1f8;
+  font-weight: 600;
+}
+
+.admin-topbar-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--admin-text);
+}
+
+/* The nav carries 15 sections; let it wrap on medium screens and scroll on
+   phones instead of pushing the account controls off the bar. */
+.admin-topbar {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+.admin-topbar-nav {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.admin-topbar-user {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1199.98px) {
+  .admin-topbar-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.15rem;
+    scrollbar-width: thin;
+  }
+
+  .admin-topbar-nav .nav-link {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .admin-topbar {
+    padding: 0.6rem 0.85rem;
+  }
+
+  .admin-topbar-user .btn-admin {
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+/* ---------- wide tables on narrow screens ---------- */
+
+/* The list tables have five columns; without this they were clipped at the
+   right edge on phones and narrow windows instead of scrolling. */
+.admin-card-body {
+  overflow-x: auto;
+}
+
+.admin-table {
+  min-width: 34rem;
+}
